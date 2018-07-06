@@ -15,7 +15,7 @@ class TimerActivity : AppCompatActivity() {
         setContentView(R.layout.activity_timer)
         setSupportActionBar(toolbar)
 
-        fab.setOnClickListener { view ->
+        fab_play.setOnClickListener { view ->
             Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                     .setAction("Action", null).show()
         }
