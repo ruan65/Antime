@@ -18,7 +18,7 @@ class TimerActivity : AppCompatActivity() {
 
     private lateinit var timer: CountDownTimer
     private var timerLengthSeconds: Long = 0L
-    private var timerdSecondsRemaning: Long = 0L
+    private var timerSecondsRemaining: Long = 0L
     private var timerState = TimerState.STOPPED
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -42,7 +42,7 @@ class TimerActivity : AppCompatActivity() {
 
         timerState = PrefsUtils.getTimerState(this)
 
-        timerdSecondsRemaning = when (timerState) {
+        timerSecondsRemaining = when (timerState) {
             TimerState.STOPPED -> {
                 setNewTimerLength()
                 timerLengthSeconds
@@ -63,6 +63,12 @@ class TimerActivity : AppCompatActivity() {
 
     private fun updateCountdownUI() {
 
+        val minuteUntilFinish = timerSecondsRemaining / 60
+        val secondsInMinuteLeft = timerSecondsRemaining - minuteUntilFinish * 60
+        val secondsDivider = ":" + if (secondsInMinuteLeft < 10) "0" else ""
+        val timerDisplay = "$minuteUntilFinish$secondsDivider$secondsInMinuteLeft"
+        tv_countdown.text = timerDisplay
+        progress_countdown.progress = (timerLengthSeconds - timerSecondsRemaining).toInt()
 
     }
 
@@ -91,11 +97,12 @@ class TimerActivity : AppCompatActivity() {
             TimerState.PAUSED -> {
                 //TODO: show notification
             }
-            else -> {}
+            else -> {
+            }
         }
 
         PrefsUtils.setPreviousTimerLengthSeconds(this, timerLengthSeconds)
-        PrefsUtils.setSecondsRemaining(this, timerdSecondsRemaning)
+        PrefsUtils.setSecondsRemaining(this, timerSecondsRemaining)
         PrefsUtils.setTimerState(this, timerState)
     }
 
@@ -125,7 +132,7 @@ class TimerActivity : AppCompatActivity() {
         progress_countdown.progress = 0
 
         PrefsUtils.setPreviousTimerLengthSeconds(this, timerLengthSeconds)
-        timerdSecondsRemaning = timerLengthSeconds
+        timerSecondsRemaining = timerLengthSeconds
 
         updateButtons()
         updateCountdownUI()
@@ -133,18 +140,26 @@ class TimerActivity : AppCompatActivity() {
 
     private fun updateButtons() {
 
+        fab_stop.isEnabled = true
+        fab_start.isEnabled = true
+        fab_pause.isEnabled = true
+        when (timerState) {
+            TimerState.RUNNING -> fab_start.isEnabled = false
+            TimerState.PAUSED -> fab_pause.isEnabled = false
+            TimerState.STOPPED -> fab_stop.isEnabled = false
+        }
     }
 
     private fun startTimer() {
 
         timerState = TimerState.RUNNING
 
-        timer = object : CountDownTimer(timerdSecondsRemaning * 1000, 1000) {
+        timer = object : CountDownTimer(timerSecondsRemaining * 1000, 1000) {
             override fun onFinish() = onTimerFinished()
 
             override fun onTick(msUntilFinished: Long) {
 
-                timerdSecondsRemaning = msUntilFinished / 1000
+                timerSecondsRemaining = msUntilFinished / 1000
                 updateCountdownUI()
             }
         }.start()
