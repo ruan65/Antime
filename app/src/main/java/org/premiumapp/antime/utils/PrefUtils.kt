@@ -40,7 +40,7 @@ class PrefsUtils {
                     .apply()
         }
 
-        private const val SECONDS_REMAINING_ID = "PREVIOUS_TIMER_LENGTH_SECONDS_ID"
+        private const val SECONDS_REMAINING_ID = "SECONDS_REMAINING_ID"
 
         fun getTimerSecondsRemaining(ctx: Context): Long {
             return PreferenceManager.getDefaultSharedPreferences(ctx)
@@ -56,6 +56,17 @@ class PrefsUtils {
         fun getDefaultPrefsEditor(ctx: Context): SharedPreferences.Editor {
             return PreferenceManager.getDefaultSharedPreferences(ctx)
                     .edit()
+        }
+
+        private const val ALARM_SET_TIME_ID = "ALARM_SET_TIME_ID"
+
+        fun getAlarmTime(ctx: Context): Long {
+            return PreferenceManager.getDefaultSharedPreferences(ctx)
+                    .getLong(ALARM_SET_TIME_ID, 0)
+        }
+
+        fun setAlarmTime(ctx: Context, time: Long) {
+            getDefaultPrefsEditor(ctx).putLong(ALARM_SET_TIME_ID, time).apply()
         }
     }
 }

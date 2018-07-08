@@ -1,20 +1,42 @@
 package org.premiumapp.antime
 
+import android.app.AlarmManager
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.support.v7.app.AppCompatActivity
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 
 import kotlinx.android.synthetic.main.activity_timer.*
 import kotlinx.android.synthetic.main.content_timer.*
+import org.premiumapp.antime.broadcast.TimerExpiredReceiver
 import org.premiumapp.antime.utils.PrefsUtils
+import java.util.*
 
 enum class TimerState {
     STOPPED, RUNNING, PAUSED
 }
 
 class TimerActivity : AppCompatActivity() {
+
+    companion object {
+        fun setAlarm(ctx: Context, nowSeconds: Long, secondsRemaining: Long): Long {
+            val wakeUpTime = (nowSeconds + secondsRemaining) * 1000
+            val alarmManager = ctx.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            val intent = Intent(ctx, TimerExpiredReceiver::class.java)
+            val pendingIntent = PendingIntent.getBroadcast(ctx, 0, intent, 0)
+            alarmManager.setExact(AlarmManager.RTC_WAKEUP, wakeUpTime, pendingIntent)
+            PrefsUtils.setAlarmTime(ctx, nowSeconds)
+            return wakeUpTime
+        }
+
+        val nowSeconds: Long
+            get() = Calendar.getInstance().timeInMillis / 1000
+    }
 
     private lateinit var timer: CountDownTimer
     private var timerLengthSeconds: Long = 0L
@@ -42,16 +64,15 @@ class TimerActivity : AppCompatActivity() {
 
         timerState = PrefsUtils.getTimerState(this)
 
-        timerSecondsRemaining = when (timerState) {
-            TimerState.STOPPED -> {
-                setNewTimerLength()
-                timerLengthSeconds
-            }
-            else -> {
-                setPreviousTimerLength()
-                PrefsUtils.getTimerSecondsRemaining(this)
-            }
-        }
+        if (timerState == TimerState.STOPPED)
+            setNewTimerLength()
+        else
+            setPreviousTimerLength()
+
+        timerSecondsRemaining = if (TimerState.RUNNING == timerState || TimerState.PAUSED == timerState)
+            PrefsUtils.getTimerSecondsRemaining(this)
+        else
+            timerLengthSeconds
 
         if (timerState == TimerState.RUNNING) {
             startTimer()
@@ -63,13 +84,17 @@ class TimerActivity : AppCompatActivity() {
 
     private fun updateCountdownUI() {
 
+        Log.d("mylog", "timerLengthSeconds: $timerLengthSeconds sec remaining: $timerSecondsRemaining")
         val minuteUntilFinish = timerSecondsRemaining / 60
         val secondsInMinuteLeft = timerSecondsRemaining - minuteUntilFinish * 60
         val secondsDivider = ":" + if (secondsInMinuteLeft < 10) "0" else ""
         val timerDisplay = "$minuteUntilFinish$secondsDivider$secondsInMinuteLeft"
         tv_countdown.text = timerDisplay
-        progress_countdown.progress = (timerLengthSeconds - timerSecondsRemaining).toInt()
+//        progress_countdown.max = timerLengthSeconds.toInt()
+        val progress = (timerLengthSeconds - timerSecondsRemaining).toInt()
+        progress_countdown.progress = progress
 
+        Log.d("mylog", "progress: $progress")
     }
 
     private fun setPreviousTimerLength() {
