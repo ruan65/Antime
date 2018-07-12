@@ -3,11 +3,16 @@ package org.premiumapp.antime.broadcast
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import org.premiumapp.antime.TimerState
+import org.premiumapp.antime.utils.PrefsUtils
 
 class TimerExpiredReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
-        // This method is called when the BroadcastReceiver is receiving an Intent broadcast.
-        TODO("TimerExpiredReceiver.onReceive() is not implemented")
+        // TODO show notification
+
+        PrefsUtils.setTimerState(context, TimerState.STOPPED)
+
+        PrefsUtils.setAlarmSetTime(context, 0)
     }
 }

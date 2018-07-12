@@ -24,14 +24,23 @@ enum class TimerState {
 class TimerActivity : AppCompatActivity() {
 
     companion object {
+
         fun setAlarm(ctx: Context, nowSeconds: Long, secondsRemaining: Long): Long {
             val wakeUpTime = (nowSeconds + secondsRemaining) * 1000
             val alarmManager = ctx.getSystemService(Context.ALARM_SERVICE) as AlarmManager
             val intent = Intent(ctx, TimerExpiredReceiver::class.java)
             val pendingIntent = PendingIntent.getBroadcast(ctx, 0, intent, 0)
             alarmManager.setExact(AlarmManager.RTC_WAKEUP, wakeUpTime, pendingIntent)
-            PrefsUtils.setAlarmTime(ctx, nowSeconds)
+            PrefsUtils.setAlarmSetTime(ctx, nowSeconds)
             return wakeUpTime
+        }
+
+        fun removeAlarm(ctx: Context) {
+            val intent = Intent(ctx, TimerExpiredReceiver::class.java)
+            val pendingIntent = PendingIntent.getBroadcast(ctx, 0, intent, 0)
+            val alarmManager = ctx.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            alarmManager.cancel(pendingIntent)
+            PrefsUtils.setAlarmSetTime(ctx, 0)
         }
 
         val nowSeconds: Long
@@ -54,10 +63,10 @@ class TimerActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-
         initTimer()
 
-        //TODO: remove background timer, hide notification
+        removeAlarm(this)
+        //TODO: hide notification
     }
 
     private fun initTimer() {
@@ -74,7 +83,15 @@ class TimerActivity : AppCompatActivity() {
         else
             timerLengthSeconds
 
-        if (timerState == TimerState.RUNNING) {
+        val alarmSetTime = PrefsUtils.getAlarmTime(this)
+
+        if (alarmSetTime > 0) {
+            timerSecondsRemaining -= nowSeconds - alarmSetTime
+        }
+
+        if (timerSecondsRemaining <= 0) {
+            onTimerFinished()
+        } else if (timerState == TimerState.RUNNING) {
             startTimer()
         }
 
@@ -117,7 +134,8 @@ class TimerActivity : AppCompatActivity() {
         when (timerState) {
             TimerState.RUNNING -> {
                 timer.cancel()
-                //TODO: start background timer, show notification
+                val wakeUpTime = setAlarm(this, nowSeconds, timerSecondsRemaining)
+                //TODO: show notification
             }
             TimerState.PAUSED -> {
                 //TODO: show notification

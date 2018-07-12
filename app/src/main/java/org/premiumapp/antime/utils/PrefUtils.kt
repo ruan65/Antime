@@ -65,7 +65,7 @@ class PrefsUtils {
                     .getLong(ALARM_SET_TIME_ID, 0)
         }
 
-        fun setAlarmTime(ctx: Context, time: Long) {
+        fun setAlarmSetTime(ctx: Context, time: Long) {
             getDefaultPrefsEditor(ctx).putLong(ALARM_SET_TIME_ID, time).apply()
         }
     }
