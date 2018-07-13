@@ -14,6 +14,7 @@ import android.view.MenuItem
 import kotlinx.android.synthetic.main.activity_timer.*
 import kotlinx.android.synthetic.main.content_timer.*
 import org.premiumapp.antime.broadcast.TimerExpiredReceiver
+import org.premiumapp.antime.utils.NotificationUtils
 import org.premiumapp.antime.utils.PrefsUtils
 import java.util.*
 
@@ -66,7 +67,7 @@ class TimerActivity : AppCompatActivity() {
         initTimer()
 
         removeAlarm(this)
-        //TODO: hide notification
+        NotificationUtils.hideTimerNotification(this)
     }
 
     private fun initTimer() {
@@ -135,10 +136,10 @@ class TimerActivity : AppCompatActivity() {
             TimerState.RUNNING -> {
                 timer.cancel()
                 val wakeUpTime = setAlarm(this, nowSeconds, timerSecondsRemaining)
-                //TODO: show notification
+                NotificationUtils.showTimerRunning(this, wakeUpTime)
             }
             TimerState.PAUSED -> {
-                //TODO: show notification
+                NotificationUtils.showTimerPaused(this)
             }
             else -> {
             }
