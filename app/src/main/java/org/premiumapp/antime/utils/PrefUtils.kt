@@ -8,12 +8,17 @@ import org.premiumapp.antime.TimerState
 class PrefsUtils {
 
     companion object {
-        fun getTimerLength(ctx: Context): Long {
 
-            return 1
-        }
-
+        private const val TIMER_LENGTH_ID = "org.premiumapp.antime.timer_length"
         private const val PREVIOUS_TIMER_LENGTH_SECONDS_ID = "PREVIOUS_TIMER_LENGTH_SECONDS_ID"
+        private const val TIMER_STATE_ID = "TIMER_STATE_ID"
+        private const val SECONDS_REMAINING_ID = "SECONDS_REMAINING_ID"
+        private const val ALARM_SET_TIME_ID = "ALARM_SET_TIME_ID"
+
+        fun getTimerLength(ctx: Context): Int {
+            return PreferenceManager.getDefaultSharedPreferences(ctx)
+                    .getInt(TIMER_LENGTH_ID, 10)
+        }
 
         fun getPreviousTimerLengthSeconds(ctx: Context): Long {
             return PreferenceManager.getDefaultSharedPreferences(ctx)
@@ -25,8 +30,6 @@ class PrefsUtils {
                     .putLong(PREVIOUS_TIMER_LENGTH_SECONDS_ID, sec)
                     .apply()
         }
-
-        private const val TIMER_STATE_ID = "TIMER_STATE_ID"
 
         fun getTimerState(ctx: Context): TimerState {
             return TimerState.values()[
@@ -40,7 +43,6 @@ class PrefsUtils {
                     .apply()
         }
 
-        private const val SECONDS_REMAINING_ID = "SECONDS_REMAINING_ID"
 
         fun getTimerSecondsRemaining(ctx: Context): Long {
             return PreferenceManager.getDefaultSharedPreferences(ctx)
@@ -53,12 +55,10 @@ class PrefsUtils {
                     .apply()
         }
 
-        fun getDefaultPrefsEditor(ctx: Context): SharedPreferences.Editor {
+        private fun getDefaultPrefsEditor(ctx: Context): SharedPreferences.Editor {
             return PreferenceManager.getDefaultSharedPreferences(ctx)
                     .edit()
         }
-
-        private const val ALARM_SET_TIME_ID = "ALARM_SET_TIME_ID"
 
         fun getAlarmTime(ctx: Context): Long {
             return PreferenceManager.getDefaultSharedPreferences(ctx)
